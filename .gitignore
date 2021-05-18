@@ -31,5 +31,5 @@ override.tf.json
 .idea
 *.iml
 
-**/ssh/containerd*
+ssh/containerd*
 *openrc.sh

@@ -3,7 +3,7 @@ variable "pool" {
 }
 
 variable "ssh_key_file" {
-  default = "ssh/containerd"
+  default = "../ssh/containerd"
 }
 
 variable "stackit-containerd-name" {

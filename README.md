@@ -1,6 +1,42 @@
 # stackit-containerd
 STACKIT contained reference implementation via OpenStack
 
+# Installion
+
+Dont forget to create your own ssh key and use your own terraform backend. I use the azurerm again.
+
+```hcl
+backend "azurerm" {
+  storage_account_name = "aebi"
+  container_name       = "stackit-containerd-state"
+  key                  = "stackit-containerd.tfstate"
+}
+```
+
+## Infrastructure
+
+Get the `*-openrc.sh` file and source it. 
+
+```bash
+source *-openrc.sh
+```
+
+Execute the Terraform.
+
+```bash
+cd 00-infrastructure
+terraform init
+terraform apply --auto-approve
+```
+
+## Provisioning (via Ansible)
+
+Ansible installs the containerd, cni and nerdctl. Because we need to run the install of nerdctl rootless via `containerd-rootless-setuptool.sh install` I could not use the cloud-init approach.
+
+```bash
+ansible-playbook --private-key ssh/containerd -i 01-provisioning/hosts.yaml 01-provisioning/playbook.yaml
+```
+
 # Containerd
 
 As Kubernetes grew and more third-party tools arose around Docker, the limitations of its architecture became clear. At the same time, the Open Container Initiative (OCI) began standardising container formats and runtimes. This resulted in an OCI specification defining a container which could be used by multiple runtimes, of which Docker is an example.
@@ -9,7 +45,7 @@ Docker then extracted its container runtime out into a new project, containerd. 
 
 The emergence of containerd makes it easier for projects like Kubernetes to access the low-level “Docker” elements they need. Instead of actually using Docker, they now have a more accessible interface to the container runtime. The OCI standardisation of container technologies means other runtimes can be used too.
 
-![logo](img/containerd.png)
+![logo](docs/img/containerd.png)
 
 There are two kinds of container runtimes: high-level container runtimes and low-level container runtimes. 
 
@@ -28,7 +64,7 @@ Follow the official docs for installing Containerd; or if you’re using Ubuntu,
 
 Some basic usage of the ctr-cli. I would suggest using the nerdctl-cli, if you seriously think about to substitute the docker-cli
 
-![logo](img/ctr.png)
+![logo](docs/img/ctr.png)
 
 Let us pull an image
 
