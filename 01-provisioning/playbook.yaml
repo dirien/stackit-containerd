@@ -1,0 +1,64 @@
+---
+- hosts: all
+  become: yes
+  tasks:
+  - name: Download containerd-1.5.1-linux-amd64.tar.gz with check (sha256)
+    get_url:
+      url: https://github.com/containerd/containerd/releases/download/v1.5.1/containerd-1.5.1-linux-amd64.tar.gz
+      dest: /tmp/containerd-1.5.1-linux-amd64.tar.gz
+      checksum: sha256:39447c8082b0df001d5a4888857d2f551096dbf20aa4f0912631117224d8fe52
+  - name: Download containerd.service with check (sha256)
+    get_url:
+      url: https://raw.githubusercontent.com/containerd/containerd/v1.5.1/containerd.service
+      dest: /etc/systemd/system/containerd.service
+  - name: Extract containerd-1.5.1-linux-amd64.tar.gz into /usr/local/bin/
+    unarchive:
+      src: /tmp/containerd-1.5.1-linux-amd64.tar.gz
+      dest: /usr/local/bin/
+      remote_src: yes
+  - name: Enable containerd envoy
+    ansible.builtin.service:
+      name: containerd
+      enabled: yes
+  - name: Start service containerd, if not started
+    ansible.builtin.service:
+      name: containerd
+      state: started
+
+  - name: Make /opt/cni/bin directory
+    file:
+      path: /opt/cni/bin
+      state: directory
+  - name: Download cni-plugins-linux-amd64-v0.9.1.tgzz with check (sha256)
+    get_url:
+      url: https://github.com/containernetworking/plugins/releases/download/v0.9.1/cni-plugins-linux-amd64-v0.9.1.tgz
+      dest: /tmp/cni-plugins-linux-amd64-v0.9.1.tgz
+      checksum: sha256:962100bbc4baeaaa5748cdbfce941f756b1531c2eadb290129401498bfac21e7
+  - name: Extract cni-plugins-linux-amd64-v0.9.1.tgz into /opt/cni/bin
+    unarchive:
+      src: /tmp/cni-plugins-linux-amd64-v0.9.1.tgz
+      dest: /opt/cni/bin
+      remote_src: yes
+
+
+  - name: Download nerdctl-full-0.8.1-linux-amd64.tar.gz with check (sha256)
+    get_url:
+      url: https://github.com/containerd/nerdctl/releases/download/v0.8.1/nerdctl-full-0.8.1-linux-amd64.tar.gz
+      dest: /tmp/nerdctl-full-0.8.1-linux-amd64.tar.gz
+      checksum: sha256:56815941ddf469f1e5be72cc1bf1ff7436c88c2abc2d99e1cf40aa28a695e17d
+  - name: Extract nerdctl-full-0.8.1-linux-amd64.tar.gz into /usr/local/
+    unarchive:
+      src: /tmp/nerdctl-full-0.8.1-linux-amd64.tar.gz
+      dest: /usr/local/
+      remote_src: yes
+
+- hosts: all
+  tasks:
+  - name: install nerdctl rootless
+    ansible.builtin.command: containerd-rootless-setuptool.sh install
+
+  - name: install BuildKit
+    ansible.builtin.command: containerd-rootless-setuptool.sh install-buildkit
+
+  - name: install stargz
+    ansible.builtin.command: containerd-rootless-setuptool.sh install-stargz
